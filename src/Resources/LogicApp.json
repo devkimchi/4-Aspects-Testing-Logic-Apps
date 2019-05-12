@@ -1,0 +1,135 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "The location of the Logic App instance"
+      },
+      "allowedValues": [
+        "australiaeast",
+        "australiasoutheast",
+        "koreancentral",
+        "koreasouth",
+        "[resourceGroup().location]"
+      ],
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "locationCode": {
+      "type": "string",
+      "metadata": {
+        "description": "The location code representing the location of the Logic App instance"
+      },
+      "allowedValues": [
+        "aue",
+        "ause",
+        "krc",
+        "krs"
+      ]
+    },
+    "environmentCode": {
+      "type": "string",
+      "metadata": {
+        "description": "The environment code where the Logic App instnce is deployed"
+      },
+      "allowedValues": [
+        "dev",
+        "test",
+        "prod"
+      ],
+      "defaultValue": "dev"
+    },
+    "workflowName": {
+      "type": "string",
+      "metadata": {
+        "description": "The workflow name of the Logic App instance"
+      }
+    },
+    "productOwnerCode": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the product owner of the Logic App instance"
+      },
+      "allowedValues": [
+        "finance",
+        "hr",
+        "marketing",
+        "devops"
+      ],
+      "defaultValue": "devops"
+    },
+    "logicAppManagedIdentityType": {
+      "type": "string",
+      "metadata": {
+        "description": "The value indicating whether the Logic App instance is integrated with Azure AD or not"
+      },
+      "allowedValues": [
+        "SystenAssigned",
+        "None"
+      ],
+      "defaultValue": "None"
+    },
+    "logicAppState": {
+      "type": "string",
+      "metadata": {
+        "description": "The value indicating whether the Logic App instance is enabled or not"
+      },
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "defaultValue": "Disabled"
+    }
+  },
+  "variables": {
+    "resourceName": "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'), '{1}')]",
+    "logicApp": {
+      "name": "[replace(replace(variables('resourceName'), '{0}', 'logapp'), '{1}', concat('-', parameters('workflowName')))]",
+      "apiVersion": "[providers('Microsoft.Logic', 'workflows').apiVersions[0]]",
+      "location": "[parameters('location')]",
+      "resourceId": "[resourceId('Microsoft.Logic/workflows', replace(replace(variables('resourceName'), '{0}', 'logapp'), '{1}', concat('-', parameters('workflowName'))))]",
+      "state": "[parameters('logicAppState')]",
+      "identity": {
+        "type": "[parameters('logicAppManagedIdentityType')]"
+      }
+    },
+    "tags": {
+      "author": "Justin Yoo",
+      "profile": "https://twitter.com/justinchronicle",
+      "projectUrl": "https://github.com/devkimchi/4-Aspects-Testing-Logic-Apps",
+      "repositoryUrl": "https://github.com/devkimchi/4-Aspects-Testing-Logic-Apps",
+      "license": "https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "[variables('logicApp').apiVersion]",
+      "type": "Microsoft.Logic/workflows",
+      "name": "[variables('logicApp').name]",
+      "location": "[variables('logicApp').location]",
+      "tags": "[variables('tags')]",
+      "identity": {
+        "type": "[variables('logicApp').identity.type]"
+      },
+      "properties": {
+        "state": "[variables('logicApp').state]",
+        "parameters": {},
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "triggers": {},
+          "actions": {},
+          "outputs": {}
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "logicAppName": {
+      "type": "string",
+      "value": "[reference(variables('logicApp').resourceId, variables('logicApp').apiVersion, 'Full').resourceId]"
+    }
+  }
+}

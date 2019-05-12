@@ -1,0 +1,86 @@
+$schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#
+contentVersion: 1.0.0.0
+parameters:
+  location:
+    type: string
+    metadata:
+      description: The location of the Logic App instance
+    allowedValues:
+    - australiaeast
+    - australiasoutheast
+    - koreancentral
+    - koreasouth
+    - "[resourceGroup().location]"
+    defaultValue: "[resourceGroup().location]"
+  locationCode:
+    type: string
+    metadata:
+      description: The location code representing the location of the Logic App instance
+    allowedValues:
+    - aue
+    - ause
+    - krc
+    - krs
+  environmentCode:
+    type: string
+    metadata:
+      description: The environment code where the Logic App instnce is deployed
+    allowedValues:
+    - dev
+    - test
+    - prod
+    defaultValue: dev
+  productOwnerCode:
+    type: string
+    metadata:
+      description: The name of the product owner of the Logic App instance
+    allowedValues:
+    - finance
+    - hr
+    - marketing
+    - devops
+    defaultValue: devops
+
+variables:
+  # METADATA
+  resourceName: "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]"
+
+  # API CONNECTION
+  apiConnection:
+    name: "[replace(variables('resourceName'), '{0}', 'apicon')]"
+    apiVersion: "[providers('Microsoft.Web', 'connections').apiVersions[0]]"
+    location: "[parameters('location')]"
+    resourceId: "[resourceId('Microsoft.Web/connections', replace(variables('resourceName'), '{0}', 'apicon'))]"
+
+  # SERVICE BUS
+  serviceBus:
+    name: "[replace(variables('resourceName'), '{0}', 'svcbus')]"
+    rules:
+      apiVersion: "[providers('Microsoft.ServiceBus', 'namespaces/authorizationRules').apiVersions[0]]"
+      resourceId: "[resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', replace(variables('resourceName'), '{0}', 'svcbus'), 'RootManageSharedAccessKey')]"
+  
+  # TAGS
+  tags:
+    author: Justin Yoo
+    profile: https://twitter.com/justinchronicle
+    projectUrl: https://github.com/devkimchi/4-Aspects-Testing-Logic-Apps
+    repositoryUrl: https://github.com/devkimchi/4-Aspects-Testing-Logic-Apps
+    license: https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE
+
+resources:
+- apiVersion: "[variables('apiConnection').apiVersion]"
+  type: Microsoft.Web/connections
+  name: "[variables('apiConnection').name]"
+  location: "[variables('apiConnection').location]"
+  tags: "[variables('tags')]"
+  properties:
+    api:
+      id: "[concat(subscription().id, '/providers/Microsoft.Web/locations/', variables('apiConnection').location, '/managedApis/servicebus')]"
+    displayName: "[variables('apiConnection').name]"
+    parameterValues:
+      connectionString: "[listKeys(variables('serviceBus').rules.resourceId, variables('serviceBus').rules.apiVersion).primaryConnectionString]"
+
+outputs:
+  apiConnectionName:
+    type: string
+    value: "[reference(variables('apiConnection').resourceId, variables('apiconnection').apiVersion, 'Full').resourceId]"

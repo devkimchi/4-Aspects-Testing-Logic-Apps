@@ -1,0 +1,115 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "The location of the Logic App instance"
+      },
+      "allowedValues": [
+        "australiaeast",
+        "australiasoutheast",
+        "koreancentral",
+        "koreasouth",
+        "[resourceGroup().location]"
+      ],
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "locationCode": {
+      "type": "string",
+      "metadata": {
+        "description": "The location code representing the location of the Logic App instance"
+      },
+      "allowedValues": [
+        "aue",
+        "ause",
+        "krc",
+        "krs"
+      ]
+    },
+    "environmentCode": {
+      "type": "string",
+      "metadata": {
+        "description": "The environment code where the Logic App instnce is deployed"
+      },
+      "allowedValues": [
+        "dev",
+        "test",
+        "prod"
+      ],
+      "defaultValue": "dev"
+    },
+    "productOwnerCode": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the product owner of the Logic App instance"
+      },
+      "allowedValues": [
+        "finance",
+        "hr",
+        "marketing",
+        "devops"
+      ],
+      "defaultValue": "devops"
+    },
+    "serviceBusSkuName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of SKU of the Service Bus instance"
+      },
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ]
+    },
+    "serviceBusSkuTier": {
+      "type": "string",
+      "metadata": {
+        "description": "The tier of SKU of the Service Bus instance"
+      },
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ]
+    }
+  },
+  "variables": {
+    "resourceName": "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]",
+    "serviceBus": {
+      "name": "[replace(variables('resourceName'), '{0}', 'svcbus')]",
+      "apiVersion": "[providers('Microsoft.ServiceBus', 'namespaces').apiVersions[0]]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('serviceBusSkuName')]",
+        "tier": "[parameters('serviceBusSkuTier')]"
+      }
+    },
+    "tags": {
+      "author": "Justin Yoo",
+      "profile": "https://twitter.com/justinchronicle",
+      "projectUrl": "https://github.com/devkimchi/4-Aspects-Testing-Logic-Apps",
+      "repositoryUrl": "https://github.com/devkimchi/4-Aspects-Testing-Logic-Apps",
+      "license": "https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "[variables('serviceBus').apiVersion]",
+      "type": "Microsoft.ServiceBus/namespaces",
+      "name": "[variables('serviceBus').name]",
+      "location": "[variables('serviceBus').location]",
+      "tags": "[variables('tags')]",
+      "sku": {
+        "name": "[variables('serviceBus').sku.name]",
+        "tier": "[variables('serviceBus').sku.tier]"
+      }
+    }
+  ],
+  "outputs": {
+    "serviceBusName": {
+      "type": "string",
+      "value": "[reference(variables('serviceBus').name, variables('serviceBus').apiVersion, 'Full').resourceId]"
+    }
+  }
+}

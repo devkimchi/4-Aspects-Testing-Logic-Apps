@@ -1,0 +1,86 @@
+$schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#
+contentVersion: 1.0.0.0
+parameters:
+  location:
+    type: string
+    metadata:
+      description: The location of the Logic App instance
+    allowedValues:
+    - australiaeast
+    - australiasoutheast
+    - koreancentral
+    - koreasouth
+    - "[resourceGroup().location]"
+    defaultValue: "[resourceGroup().location]"
+  locationCode:
+    type: string
+    metadata:
+      description: The location code representing the location of the Logic App instance
+    allowedValues:
+    - aue
+    - ause
+    - krc
+    - krs
+  environmentCode:
+    type: string
+    metadata:
+      description: The environment code where the Logic App instnce is deployed
+    allowedValues:
+    - dev
+    - test
+    - prod
+    defaultValue: dev
+  productOwnerCode:
+    type: string
+    metadata:
+      description: The name of the product owner of the Logic App instance
+    allowedValues:
+    - finance
+    - hr
+    - marketing
+    - devops
+    defaultValue: devops
+
+  serviceBusTopicName:
+    type: string
+    metadata:
+      description: The topic name of the Service Bus instance
+  serviceBusTopicSubscriptionName:
+    type: string
+    metadata:
+      description: The topic subscription name of the Service Bus instance
+
+variables:
+  # METADATA
+  resourceName: "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]"
+
+  # SERVICE BUS
+  serviceBus:
+    name: "[replace(variables('resourceName'), '{0}', 'svcbus')]"
+    location: "[parameters('location')]"
+    topic:
+      name: "[parameters('serviceBusTopicName')]"
+      subscription:
+        name: "[parameters('serviceBusTopicSubscriptionName')]"
+        apiVersion: "[providers('Microsoft.ServiceBus', 'namespaces/topics/subscriptions').apiVersions[0]]"
+        resourceId: "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', replace(variables('resourceName'), '{0}', 'svcbus'), parameters('serviceBusTopicName'), parameters('serviceBusTopicSubscriptionName'))]"
+  
+  # TAGS
+  tags:
+    author: Justin Yoo
+    profile: https://twitter.com/justinchronicle
+    projectUrl: https://github.com/devkimchi/4-Aspects-Testing-Logic-Apps
+    repositoryUrl: https://github.com/devkimchi/4-Aspects-Testing-Logic-Apps
+    license: https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE
+
+resources:
+- apiVersion: "[variables('serviceBus').topic.subscription.apiVersion]"
+  type: Microsoft.ServiceBus/namespaces/topics/subscriptions
+  name: "[concat(variables('serviceBus').name, '/', variables('serviceBus').topic.name, '/', variables('serviceBus').topic.subscription.name)]"
+  location: "[variables('serviceBus').location]"
+  tags: "[variables('tags')]"
+
+outputs:
+  serviceBusTopicSubscriptionName:
+    type: string
+    value: "[reference(variables('serviceBus').topic.subscription.resourceId, variables('serviceBus').topic.subscription.apiVersion, 'Full').resourceId]"
