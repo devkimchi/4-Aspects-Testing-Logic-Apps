@@ -5,7 +5,7 @@
     "location": {
       "type": "string",
       "metadata": {
-        "description": "The location of the Logic App instance"
+        "description": "The location of the API Connection instance"
       },
       "allowedValues": [
         "australiaeast",
@@ -19,7 +19,7 @@
     "locationCode": {
       "type": "string",
       "metadata": {
-        "description": "The location code representing the location of the Logic App instance"
+        "description": "The location code representing the location of the API Connection instance"
       },
       "allowedValues": [
         "aue",
@@ -31,7 +31,7 @@
     "environmentCode": {
       "type": "string",
       "metadata": {
-        "description": "The environment code where the Logic App instnce is deployed"
+        "description": "The environment code where the API Connection instnce is deployed"
       },
       "allowedValues": [
         "dev",
@@ -43,7 +43,7 @@
     "productOwnerCode": {
       "type": "string",
       "metadata": {
-        "description": "The name of the product owner of the Logic App instance"
+        "description": "The name of the product owner of the API Connection instance"
       },
       "allowedValues": [
         "finance",

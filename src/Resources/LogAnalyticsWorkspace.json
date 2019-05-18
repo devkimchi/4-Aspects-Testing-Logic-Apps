@@ -5,7 +5,7 @@
     "location": {
       "type": "string",
       "metadata": {
-        "description": "The location of the Integration Account instance"
+        "description": "The location of the Log Analytics instance"
       },
       "allowedValues": [
         "australiaeast",
@@ -19,7 +19,7 @@
     "locationCode": {
       "type": "string",
       "metadata": {
-        "description": "The location code representing the location of the Integration Account instance"
+        "description": "The location code representing the location of the Log Analytics instance"
       },
       "allowedValues": [
         "aue",
@@ -31,7 +31,7 @@
     "environmentCode": {
       "type": "string",
       "metadata": {
-        "description": "The environment code where the Integration Account instnce is deployed"
+        "description": "The environment code where the Log Analytics instnce is deployed"
       },
       "allowedValues": [
         "dev",
@@ -43,7 +43,7 @@
     "productOwnerCode": {
       "type": "string",
       "metadata": {
-        "description": "The name of the product owner of the Integration Account instance"
+        "description": "The name of the product owner of the Log Analytics instance"
       },
       "allowedValues": [
         "finance",
@@ -53,41 +53,36 @@
       ],
       "defaultValue": "devops"
     },
-    "integrationAccountSku": {
+    "logAnalyticsSkuName": {
       "type": "string",
       "metadata": {
-        "description": "The SKU value of the Integration Account instance"
+        "description": "The SKU name of Log Analytics Workspace instance."
       },
       "allowedValues": [
-        "Free",
-        "Standard",
-        "Premium"
+        "free",
+        "pernode",
+        "standalone"
       ],
-      "defaultValue": "Free"
+      "defaultValue": "pernode"
     },
-    "integrationAccountState": {
-      "type": "string",
+    "logAnalyticsRetentionInDays": {
+      "type": "int",
       "metadata": {
-        "description": "The value indicating whether the Integration Account instance is enabled or not"
+        "description": "The retention period in days. Default value is 7 for Free tier; otherwise 31."
       },
-      "allowedValues": [
-        "Enabled",
-        "Disabled"
-      ],
-      "defaultValue": "Disabled"
+      "defaultValue": 31
     }
   },
   "variables": {
     "resourceName": "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]",
-    "integrationAccount": {
-      "name": "[replace(variables('resourceName'), '{0}', 'intacc')]",
-      "apiVersion": "[providers('Microsoft.Logic', 'integrationAccounts').apiVersions[0]]",
+    "logAnalytics": {
+      "name": "[replace(variables('resourceName'), '{0}', 'logan')]",
+      "apiVersion": "[providers('Microsoft.OperationalInsights', 'workspaces').apiVersions[0]]",
       "location": "[parameters('location')]",
-      "resourceId": "[resourceId('Microsoft.Logic/integrationAccounts', replace(variables('resourceName'), '{0}', 'intacc'))]",
       "sku": {
-        "name": "[parameters('integrationAccountSku')]"
+        "name": "[parameters('logAnalyticsSkuName')]"
       },
-      "state": "[parameters('integrationAccountState')]"
+      "retentionInDays": "[parameters('logAnalyticsRetentionInDays')]"
     },
     "tags": {
       "author": "Justin Yoo",
@@ -99,23 +94,21 @@
   },
   "resources": [
     {
-      "apiVersion": "[variables('integrationAccount').apiVersion]",
-      "type": "Microsoft.Logic/integrationAccounts",
-      "name": "[variables('integrationAccount').name]",
-      "location": "[variables('integrationAccount').location]",
+      "apiVersion": "[variables('logAnalytics').apiVersion]",
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "location": "[variables('logAnalytics').location]",
       "tags": "[variables('tags')]",
-      "sku": {
-        "name": "[variables('integrationAccount').sku.name]"
-      },
+      "name": "[variables('logAnalytics').name]",
       "properties": {
-        "state": "[variables('integrationAccount').state]"
+        "sku": "[variables('logAnalytics').sku]",
+        "retentionInDays": "[variables('logAnalytics').retentionInDays]"
       }
     }
   ],
   "outputs": {
-    "integrationAccount": {
+    "logAnalyticsWorkspaceName": {
       "type": "string",
-      "value": "[reference(variables('integrationAccount').resourceId, variables('integrationAccount').apiVersion, 'Full').resourceId]"
+      "value": "[reference(variables('logAnalytics').name, variables('logAnalytics').apiVersion, 'Full').resourceId]"
     }
   }
 }

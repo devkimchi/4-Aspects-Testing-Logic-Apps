@@ -4,7 +4,7 @@ parameters:
   location:
     type: string
     metadata:
-      description: The location of the Logic App instance
+      description: The location of the Service Bus instance
     allowedValues:
     - australiaeast
     - australiasoutheast
@@ -15,7 +15,7 @@ parameters:
   locationCode:
     type: string
     metadata:
-      description: The location code representing the location of the Logic App instance
+      description: The location code representing the location of the Service Bus instance
     allowedValues:
     - aue
     - ause
@@ -24,7 +24,7 @@ parameters:
   environmentCode:
     type: string
     metadata:
-      description: The environment code where the Logic App instnce is deployed
+      description: The environment code where the Service Bus instnce is deployed
     allowedValues:
     - dev
     - test
@@ -33,7 +33,7 @@ parameters:
   productOwnerCode:
     type: string
     metadata:
-      description: The name of the product owner of the Logic App instance
+      description: The name of the product owner of the Service Bus instance
     allowedValues:
     - finance
     - hr

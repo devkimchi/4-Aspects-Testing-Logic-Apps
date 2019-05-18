@@ -16,3 +16,26 @@ parameters:
     value: None
   logicAppState:
     value: Enabled
+
+  enableDiagnosticSettings:
+    value: false
+  diagnosticSettingsName:
+    value: service
+
+  diagnosticSettingsLogsCategory:
+    value: WorkflowRuntime
+  diagnosticSettingsLogsEnabled:
+    value: true
+  diagnosticSettingsLogsRetentionEnabled:
+    value: true
+  diagnosticSettingsLogsRetentionInDays:
+    value: 30
+
+  diagnosticSettingsMetricsCategory:
+    value: AllMetrics
+  diagnosticSettingsMetricsEnabled:
+    value: true
+  diagnosticSettingsMetricsRetentionEnabled:
+    value: true
+  diagnosticSettingsMetricsRetentionInDays:
+    value: 30

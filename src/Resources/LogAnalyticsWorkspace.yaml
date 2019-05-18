@@ -1,0 +1,93 @@
+$schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#
+contentVersion: 1.0.0.0
+parameters:
+  location:
+    type: string
+    metadata:
+      description: The location of the Log Analytics instance
+    allowedValues:
+    - australiaeast
+    - australiasoutheast
+    - koreancentral
+    - koreasouth
+    - "[resourceGroup().location]"
+    defaultValue: "[resourceGroup().location]"
+  locationCode:
+    type: string
+    metadata:
+      description: The location code representing the location of the Log Analytics instance
+    allowedValues:
+    - aue
+    - ause
+    - krc
+    - krs
+  environmentCode:
+    type: string
+    metadata:
+      description: The environment code where the Log Analytics instnce is deployed
+    allowedValues:
+    - dev
+    - test
+    - prod
+    defaultValue: dev
+  productOwnerCode:
+    type: string
+    metadata:
+      description: The name of the product owner of the Log Analytics instance
+    allowedValues:
+    - finance
+    - hr
+    - marketing
+    - devops
+    defaultValue: devops
+
+  logAnalyticsSkuName:
+    type: string
+    metadata:
+      description: The SKU name of Log Analytics Workspace instance.
+    allowedValues:
+    - free
+    - pernode
+    - standalone
+    defaultValue: pernode
+  logAnalyticsRetentionInDays:
+    type: int
+    metadata:
+      description: The retention period in days. Default value is 7 for Free tier; otherwise 31.
+    defaultValue: 31
+
+variables:
+  # METADATA
+  resourceName: "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]"
+
+  # LOG ANALYTICS WORKSPACE
+  logAnalytics:
+    name: "[replace(variables('resourceName'), '{0}', 'logan')]"
+    apiVersion: "[providers('Microsoft.OperationalInsights', 'workspaces').apiVersions[0]]"
+    location: "[parameters('location')]"
+    sku:
+      name: "[parameters('logAnalyticsSkuName')]"
+    retentionInDays: "[parameters('logAnalyticsRetentionInDays')]"
+  
+  # TAGS
+  tags:
+    author: Justin Yoo
+    profile: https://twitter.com/justinchronicle
+    projectUrl: https://github.com/devkimchi/4-Aspects-Testing-Logic-Apps
+    repositoryUrl: https://github.com/devkimchi/4-Aspects-Testing-Logic-Apps
+    license: https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE
+
+resources:
+- apiVersion: "[variables('logAnalytics').apiVersion]"
+  type: Microsoft.OperationalInsights/workspaces
+  location: "[variables('logAnalytics').location]"
+  tags: "[variables('tags')]"
+  name: "[variables('logAnalytics').name]"
+  properties:
+    sku: "[variables('logAnalytics').sku]"
+    retentionInDays: "[variables('logAnalytics').retentionInDays]"
+
+outputs:
+  logAnalyticsWorkspaceName:
+    type: string
+    value: "[reference(variables('logAnalytics').name, variables('logAnalytics').apiVersion, 'Full').resourceId]"

@@ -50,7 +50,7 @@ parameters:
     metadata:
       description: The value indicating whether the Logic App instance is integrated with Azure AD or not
     allowedValues:
-    - SystenAssigned
+    - SystemAssigned
     - None
     defaultValue: None
   logicAppState:
@@ -61,6 +61,59 @@ parameters:
     - Enabled
     - Disabled
     defaultValue: Disabled
+
+  enableDiagnosticSettings:
+    type: bool
+    metadata:
+      description: The valud indicating whether the Logic App instance uses diagnostic settings or not
+    defaultValue: false
+  diagnosticSettingsName:
+    type: string
+    metadata:
+      description: The name of the diagnostic settings
+    defaultValue: service
+
+  diagnosticSettingsLogsCategory:
+    type: string
+    metadata:
+      description: The category of the diagnostic settings logs
+    defaultValue: WorkflowRuntime
+  diagnosticSettingsLogsEnabled:
+    type: bool
+    metadata:
+      description: The value indicating whether to enable log or not
+    defaultValue: true
+  diagnosticSettingsLogsRetentionEnabled:
+    type: bool
+    metadata:
+      description: The value indicating whether to enable log retention or not
+    defaultValue: true
+  diagnosticSettingsLogsRetentionInDays:
+    type: int
+    metadata:
+      description: The number of days for log retention
+    defaultValue: 30
+
+  diagnosticSettingsMetricsCategory:
+    type: string
+    metadata:
+      description: The category of the diagnostic settings metrics
+    defaultValue: AllMetrics
+  diagnosticSettingsMetricsEnabled:
+    type: bool
+    metadata:
+      description: The value indicating whether to enable metrics or not
+    defaultValue: true
+  diagnosticSettingsMetricsRetentionEnabled:
+    type: bool
+    metadata:
+      description: The value indicating whether to enable metrics retention or not
+    defaultValue: true
+  diagnosticSettingsMetricsRetentionInDays:
+    type: int
+    metadata:
+      description: The number of days for metrics retention
+    defaultValue: 30
 
 variables:
   # METADATA
@@ -75,7 +128,27 @@ variables:
     state: "[parameters('logicAppState')]"
     identity:
       type: "[parameters('logicAppManagedIdentityType')]"
+
+  diagnosticSettings:
+    enabled: "[parameters('enableDiagnosticSettings')]"
+    name: "[parameters('diagnosticSettingsName')]"
+    apiVersion: "[providers('Microsoft.Insights', 'diagnosticSettings').apiVersions[0]]"
+    logs:
+      category: "[parameters('diagnosticSettingsLogsCategory')]"
+      enabled: "[parameters('diagnosticSettingsLogsEnabled')]"
+      retention:
+        enabled: "[parameters('diagnosticSettingsLogsRetentionEnabled')]"
+        days: "[parameters('diagnosticSettingsLogsRetentionInDays')]"
+    metrics:
+      category: "[parameters('diagnosticSettingsMetricsCategory')]"
+      enabled: "[parameters('diagnosticSettingsMetricsEnabled')]"
+      retention:
+        enabled: "[parameters('diagnosticSettingsMetricsRetentionEnabled')]"
+        days: "[parameters('diagnosticSettingsMetricsRetentionInDays')]"
   
+  logAnalytics:
+    workspaceId: "[resourceId('Microsoft.OperationalInsights/workspaces', replace(replace(variables('resourceName'), '{0}', 'logan'), '{1}', ''))]"
+
   # TAGS
   tags:
     author: Justin Yoo
@@ -102,6 +175,28 @@ resources:
       triggers: {}
       actions: {}
       outputs: {}
+  resources:
+  - condition: "[equals(variables('diagnosticSettings').enabled, json('true'))]"
+    apiVersion: "[variables('diagnosticSettings').apiVersion]"
+    type: "providers/diagnosticSettings"
+    name: "[concat('Microsoft.Insights/', variables('diagnosticSettings').name)]"
+    dependsOn:
+    - "[variables('logicApp').name]"
+    properties:
+      name: "[variables('diagnosticSettings').name]"
+      workspaceId: "[variables('logAnalytics').workspaceId]"
+      logs:
+      - category: "[variables('diagnosticSettings').logs.category]"
+        enabled: "[variables('diagnosticSettings').logs.enabled]"
+        retention:
+          enabled: "[variables('diagnosticSettings').logs.retention.enabled]"
+          days: "[variables('diagnosticSettings').logs.retention.days]"
+      metrics:
+      - category: "[variables('diagnosticSettings').metrics.category]"
+        enabled: "[variables('diagnosticSettings').metrics.enabled]"
+        retention:
+          enabled: "[variables('diagnosticSettings').metrics.retention.enabled]"
+          days: "[variables('diagnosticSettings').metrics.retention.days]"
 
 outputs:
   logicAppName:
