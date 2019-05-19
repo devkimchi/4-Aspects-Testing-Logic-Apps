@@ -2,30 +2,20 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "location": {
-      "type": "string",
-      "metadata": {
-        "description": "The location of the Service Bus instance"
-      },
-      "allowedValues": [
-        "australiaeast",
-        "australiasoutheast",
-        "koreancentral",
-        "koreasouth",
-        "[resourceGroup().location]"
-      ],
-      "defaultValue": "[resourceGroup().location]"
-    },
     "locationCode": {
       "type": "string",
       "metadata": {
-        "description": "The location code representing the location of the Service Bus instance"
+        "description": "The location code representing the location of the Logic App instance"
       },
       "allowedValues": [
         "aue",
         "ause",
+        "ea",
+        "jpe",
+        "jpw",
         "krc",
-        "krs"
+        "krs",
+        "sea"
       ]
     },
     "environmentCode": {
@@ -53,6 +43,23 @@
       ],
       "defaultValue": "devops"
     },
+    "locationLookup": {
+      "type": "object",
+      "metadata": {
+        "description": "The reference to lookup location - DO NOT TOUCH"
+      },
+      "defaultValue": {
+        "auc": "australiacentral",
+        "aue": "australiaeast",
+        "ause": "australiasoutheast",
+        "ea": "eastasia",
+        "jpe": "japaneast",
+        "jpw": "japanwest",
+        "krc": "koreacentral",
+        "krs": "koreasouth",
+        "sea": "southeastasia"
+      }
+    },
     "serviceBusTopicName": {
       "type": "string",
       "metadata": {
@@ -62,9 +69,10 @@
   },
   "variables": {
     "resourceName": "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]",
+    "location": "[if(contains(parameters('locationLookup'), parameters('locationCode')), parameters('locationLookup')[parameters('locationCode')], resourceGroup().location)]",
     "serviceBus": {
       "name": "[replace(variables('resourceName'), '{0}', 'svcbus')]",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "topic": {
         "name": "[parameters('serviceBusTopicName')]",
         "apiVersion": "[providers('Microsoft.ServiceBus', 'namespaces/topics').apiVersions[0]]",

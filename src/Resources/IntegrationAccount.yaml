@@ -1,17 +1,7 @@
 $schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#
 contentVersion: 1.0.0.0
 parameters:
-  location:
-    type: string
-    metadata:
-      description: The location of the Integration Account instance
-    allowedValues:
-    - australiaeast
-    - australiasoutheast
-    - koreancentral
-    - koreasouth
-    - "[resourceGroup().location]"
-    defaultValue: "[resourceGroup().location]"
+  # NAMING CONVENTION PARAMETERS
   locationCode:
     type: string
     metadata:
@@ -19,8 +9,10 @@ parameters:
     allowedValues:
     - aue
     - ause
-    - krc
-    - krs
+    - ea
+    - jpe
+    - jpw
+    - sea
   environmentCode:
     type: string
     metadata:
@@ -41,6 +33,23 @@ parameters:
     - devops
     defaultValue: devops
 
+  # ADMIN PARAMETERS - DO NOT TOUCH
+  locationLookup:
+    type: object
+    metadata:
+      description: The reference to lookup location - DO NOT TOUCH
+    defaultValue:
+      auc: australiacentral
+      aue: australiaeast
+      ause: australiasoutheast
+      ea: eastasia
+      jpe: japaneast
+      jpw: japanwest
+      krc: koreacentral
+      krs: koreasouth
+      sea: southeastasia
+
+  # RESOURCE SPECIFIC PARAMETERS
   integrationAccountSku:
     type: string
     metadata:
@@ -62,12 +71,13 @@ parameters:
 variables:
   # METADATA
   resourceName: "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]"
+  location: "[if(contains(parameters('locationLookup'), parameters('locationCode')), parameters('locationLookup')[parameters('locationCode')], resourceGroup().location)]"
 
   # INTEGRATION ACCOUNT
   integrationAccount:
     name: "[replace(variables('resourceName'), '{0}', 'intacc')]"
     apiVersion: "[providers('Microsoft.Logic', 'integrationAccounts').apiVersions[0]]"
-    location: "[parameters('location')]"
+    location: "[variables('location')]"
     resourceId: "[resourceId('Microsoft.Logic/integrationAccounts', replace(variables('resourceName'), '{0}', 'intacc'))]"
     sku:
       name: "[parameters('integrationAccountSku')]"

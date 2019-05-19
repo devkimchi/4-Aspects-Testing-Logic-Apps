@@ -2,20 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "location": {
-      "type": "string",
-      "metadata": {
-        "description": "The location of the API Connection instance"
-      },
-      "allowedValues": [
-        "australiaeast",
-        "australiasoutheast",
-        "koreancentral",
-        "koreasouth",
-        "[resourceGroup().location]"
-      ],
-      "defaultValue": "[resourceGroup().location]"
-    },
     "locationCode": {
       "type": "string",
       "metadata": {
@@ -24,8 +10,10 @@
       "allowedValues": [
         "aue",
         "ause",
-        "krc",
-        "krs"
+        "ea",
+        "jpe",
+        "jpw",
+        "sea"
       ]
     },
     "environmentCode": {
@@ -52,14 +40,32 @@
         "devops"
       ],
       "defaultValue": "devops"
+    },
+    "locationLookup": {
+      "type": "object",
+      "metadata": {
+        "description": "The reference to lookup location - DO NOT TOUCH"
+      },
+      "defaultValue": {
+        "auc": "australiacentral",
+        "aue": "australiaeast",
+        "ause": "australiasoutheast",
+        "ea": "eastasia",
+        "jpe": "japaneast",
+        "jpw": "japanwest",
+        "krc": "koreacentral",
+        "krs": "koreasouth",
+        "sea": "southeastasia"
+      }
     }
   },
   "variables": {
     "resourceName": "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]",
+    "location": "[if(contains(parameters('locationLookup'), parameters('locationCode')), parameters('locationLookup')[parameters('locationCode')], resourceGroup().location)]",
     "apiConnection": {
       "name": "[replace(variables('resourceName'), '{0}', 'apicon')]",
       "apiVersion": "[providers('Microsoft.Web', 'connections').apiVersions[0]]",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "resourceId": "[resourceId('Microsoft.Web/connections', replace(variables('resourceName'), '{0}', 'apicon'))]"
     },
     "serviceBus": {

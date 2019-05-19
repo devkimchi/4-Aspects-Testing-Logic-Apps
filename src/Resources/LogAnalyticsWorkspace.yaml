@@ -1,26 +1,19 @@
 $schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#
 contentVersion: 1.0.0.0
 parameters:
-  location:
-    type: string
-    metadata:
-      description: The location of the Log Analytics instance
-    allowedValues:
-    - australiaeast
-    - australiasoutheast
-    - koreancentral
-    - koreasouth
-    - "[resourceGroup().location]"
-    defaultValue: "[resourceGroup().location]"
+  # NAMING CONVENTION PARAMETERS
   locationCode:
     type: string
     metadata:
       description: The location code representing the location of the Log Analytics instance
     allowedValues:
+    - auc
     - aue
     - ause
+    - ea
+    - jpe
     - krc
-    - krs
+    - sea
   environmentCode:
     type: string
     metadata:
@@ -41,6 +34,23 @@ parameters:
     - devops
     defaultValue: devops
 
+  # ADMIN PARAMETERS - DO NOT TOUCH
+  locationLookup:
+    type: object
+    metadata:
+      description: The reference to lookup location - DO NOT TOUCH
+    defaultValue:
+      auc: australiacentral
+      aue: australiaeast
+      ause: australiasoutheast
+      ea: eastasia
+      jpe: japaneast
+      jpw: japanwest
+      krc: koreacentral
+      krs: koreasouth
+      sea: southeastasia
+
+  # RESOURCE SPECIFIC PARAMETERS
   logAnalyticsSkuName:
     type: string
     metadata:
@@ -59,12 +69,13 @@ parameters:
 variables:
   # METADATA
   resourceName: "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]"
+  location: "[if(contains(parameters('locationLookup'), parameters('locationCode')), parameters('locationLookup')[parameters('locationCode')], resourceGroup().location)]"
 
   # LOG ANALYTICS WORKSPACE
   logAnalytics:
     name: "[replace(variables('resourceName'), '{0}', 'logan')]"
     apiVersion: "[providers('Microsoft.OperationalInsights', 'workspaces').apiVersions[0]]"
-    location: "[parameters('location')]"
+    location: "[variables('location')]"
     sku:
       name: "[parameters('logAnalyticsSkuName')]"
     retentionInDays: "[parameters('logAnalyticsRetentionInDays')]"

@@ -2,20 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "location": {
-      "type": "string",
-      "metadata": {
-        "description": "The location of the Logic App instance"
-      },
-      "allowedValues": [
-        "australiaeast",
-        "australiasoutheast",
-        "koreancentral",
-        "koreasouth",
-        "[resourceGroup().location]"
-      ],
-      "defaultValue": "[resourceGroup().location]"
-    },
     "locationCode": {
       "type": "string",
       "metadata": {
@@ -24,8 +10,10 @@
       "allowedValues": [
         "aue",
         "ause",
-        "krc",
-        "krs"
+        "ea",
+        "jpe",
+        "jpw",
+        "sea"
       ]
     },
     "environmentCode": {
@@ -59,6 +47,23 @@
       ],
       "defaultValue": "devops"
     },
+    "locationLookup": {
+      "type": "object",
+      "metadata": {
+        "description": "The reference to lookup location - DO NOT TOUCH"
+      },
+      "defaultValue": {
+        "auc": "australiacentral",
+        "aue": "australiaeast",
+        "ause": "australiasoutheast",
+        "ea": "eastasia",
+        "jpe": "japaneast",
+        "jpw": "japanwest",
+        "krc": "koreacentral",
+        "krs": "koreasouth",
+        "sea": "southeastasia"
+      }
+    },
     "logicAppManagedIdentityType": {
       "type": "string",
       "metadata": {
@@ -81,10 +86,17 @@
       ],
       "defaultValue": "Disabled"
     },
+    "enableIntegrationAccount": {
+      "type": "bool",
+      "metadata": {
+        "description": "The value indicating whether the Logic App instance conects to Integration Account or not"
+      },
+      "defaultValue": false
+    },
     "enableDiagnosticSettings": {
       "type": "bool",
       "metadata": {
-        "description": "The valud indicating whether the Logic App instance uses diagnostic settings or not"
+        "description": "The value indicating whether the Logic App instance uses diagnostic settings or not"
       },
       "defaultValue": false
     },
@@ -154,18 +166,23 @@
   },
   "variables": {
     "resourceName": "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'), '{1}')]",
+    "location": "[if(contains(parameters('locationLookup'), parameters('locationCode')), parameters('locationLookup')[parameters('locationCode')], resourceGroup().location)]",
     "logicApp": {
       "name": "[replace(replace(variables('resourceName'), '{0}', 'logapp'), '{1}', concat('-', parameters('workflowName')))]",
       "apiVersion": "[providers('Microsoft.Logic', 'workflows').apiVersions[0]]",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "resourceId": "[resourceId('Microsoft.Logic/workflows', replace(replace(variables('resourceName'), '{0}', 'logapp'), '{1}', concat('-', parameters('workflowName'))))]",
       "state": "[parameters('logicAppState')]",
       "identity": {
         "type": "[parameters('logicAppManagedIdentityType')]"
-      }
+      },
+      "useIntegrationAccount": "[parameters('enableIntegrationAccount')]",
+      "useDiagnosticSettings": "[parameters('enableDiagnosticSettings')]"
+    },
+    "integrationAccount": {
+      "id": "[resourceId('Microsoft.Logic/integrationAccounts', replace(replace(variables('resourceName'), '{0}', 'intacc'), '{1}', ''))]"
     },
     "diagnosticSettings": {
-      "enabled": "[parameters('enableDiagnosticSettings')]",
       "name": "[parameters('diagnosticSettingsName')]",
       "apiVersion": "[providers('Microsoft.Insights', 'diagnosticSettings').apiVersions[0]]",
       "logs": {
@@ -198,6 +215,7 @@
   },
   "resources": [
     {
+      "comment": "### RESOURCE: LOGIC APP ###",
       "apiVersion": "[variables('logicApp').apiVersion]",
       "type": "Microsoft.Logic/workflows",
       "name": "[variables('logicApp').name]",
@@ -208,6 +226,7 @@
       },
       "properties": {
         "state": "[variables('logicApp').state]",
+        "integrationAccount": "[if(equals(variables('logicApp').useIntegrationAccount, json('true')), variables('integrationAccount'), json('{}'))]",
         "parameters": {},
         "definition": {
           "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
@@ -220,7 +239,8 @@
       },
       "resources": [
         {
-          "condition": "[equals(variables('diagnosticSettings').enabled, json('true'))]",
+          "comment": "### RESOURCE: DIAGNOSTIC SETTINGS ###",
+          "condition": "[equals(variables('logicApp').useDiagnosticSettings, json('true'))]",
           "apiVersion": "[variables('diagnosticSettings').apiVersion]",
           "type": "providers/diagnosticSettings",
           "name": "[concat('Microsoft.Insights/', variables('diagnosticSettings').name)]",
