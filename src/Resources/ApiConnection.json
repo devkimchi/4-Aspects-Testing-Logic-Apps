@@ -85,6 +85,7 @@
   },
   "resources": [
     {
+      "comment": "### RESOURCE: API CONNECTION ###",
       "apiVersion": "[variables('apiConnection').apiVersion]",
       "type": "Microsoft.Web/connections",
       "name": "[variables('apiConnection').name]",

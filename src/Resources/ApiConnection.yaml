@@ -77,7 +77,8 @@ variables:
     license: https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE
 
 resources:
-- apiVersion: "[variables('apiConnection').apiVersion]"
+- comment: "### RESOURCE: API CONNECTION ###"
+  apiVersion: "[variables('apiConnection').apiVersion]"
   type: Microsoft.Web/connections
   name: "[variables('apiConnection').name]"
   location: "[variables('apiConnection').location]"

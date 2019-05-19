@@ -98,6 +98,7 @@
   },
   "resources": [
     {
+      "comment": "### RESOURCE: SERVICE BUS TOPIC SUBSCRIPTION ###",
       "apiVersion": "[variables('serviceBus').topic.subscription.apiVersion]",
       "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
       "name": "[concat(variables('serviceBus').name, '/', variables('serviceBus').topic.name, '/', variables('serviceBus').topic.subscription.name)]",

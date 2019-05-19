@@ -92,7 +92,8 @@ variables:
     license: https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE
 
 resources:
-- apiVersion: "[variables('integrationAccount').apiVersion]"
+- comment: "### RESOURCE: INTEGRATION ACCOUNT ###"
+  apiVersion: "[variables('integrationAccount').apiVersion]"
   type: Microsoft.Logic/integrationAccounts
   name: "[variables('integrationAccount').name]"
   location: "[variables('integrationAccount').location]"

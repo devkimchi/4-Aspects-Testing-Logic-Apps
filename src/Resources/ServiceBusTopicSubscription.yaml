@@ -86,7 +86,8 @@ variables:
     license: https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE
 
 resources:
-- apiVersion: "[variables('serviceBus').topic.subscription.apiVersion]"
+- comment: "### RESOURCE: SERVICE BUS TOPIC SUBSCRIPTION ###"
+  apiVersion: "[variables('serviceBus').topic.subscription.apiVersion]"
   type: Microsoft.ServiceBus/namespaces/topics/subscriptions
   name: "[concat(variables('serviceBus').name, '/', variables('serviceBus').topic.name, '/', variables('serviceBus').topic.subscription.name)]"
   location: "[variables('serviceBus').location]"

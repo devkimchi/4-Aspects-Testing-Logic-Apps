@@ -111,6 +111,7 @@
   },
   "resources": [
     {
+      "comment": "### RESOURCE: LOG ANALYTICS SOLUTION ###",
       "apiVersion": "[variables('logAnalytics').solution.apiVersion]",
       "type": "Microsoft.OperationsManagement/solutions",
       "location": "[variables('logAnalytics').solution.location]",

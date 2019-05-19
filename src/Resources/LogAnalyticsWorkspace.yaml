@@ -89,7 +89,8 @@ variables:
     license: https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE
 
 resources:
-- apiVersion: "[variables('logAnalytics').apiVersion]"
+- comment: "### RESOURCE: LOG ANALYTICS WORKSPACE ###"
+  apiVersion: "[variables('logAnalytics').apiVersion]"
   type: Microsoft.OperationalInsights/workspaces
   location: "[variables('logAnalytics').location]"
   tags: "[variables('tags')]"
