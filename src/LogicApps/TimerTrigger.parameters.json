@@ -1,0 +1,13 @@
+{
+  "LogicAppState": "Enabled",
+  "ServiceBusApiConnectorId": "",
+  "ServiceBusApiConnectionId": "",
+  "ServiceBusApiConnectionName": "",
+  "RecurrenceInterval": 3,
+  "RecurrenceFrequency": "Hour",
+  "RecurrenceTimeZone": "AUS Eastern Standard Time",
+  "RecurrenceStartTime": "2019-05-01T00:00:00Z",
+  "ServiceBusTopic": "my-topic",
+  "ServiceBusTopicSubscription": "my-subscription",
+  "RunJavaScript": ""
+}

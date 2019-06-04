@@ -103,7 +103,7 @@
   },
   "resources": [
     {
-      "comment": "### RESOURCE: SERVICE BUS NAMESPACE ###",
+      "comments": "### RESOURCE: SERVICE BUS NAMESPACE ###",
       "apiVersion": "[variables('serviceBus').apiVersion]",
       "type": "Microsoft.ServiceBus/namespaces",
       "name": "[variables('serviceBus').name]",

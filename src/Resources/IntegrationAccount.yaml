@@ -73,7 +73,7 @@ variables:
   resourceName: "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]"
   location: "[if(contains(parameters('locationLookup'), parameters('locationCode')), parameters('locationLookup')[parameters('locationCode')], resourceGroup().location)]"
 
-  # INTEGRATION ACCOUNT
+  # RESOURCE SPECIFIC VARIABLES
   integrationAccount:
     name: "[replace(variables('resourceName'), '{0}', 'intacc')]"
     apiVersion: "[providers('Microsoft.Logic', 'integrationAccounts').apiVersions[0]]"
@@ -92,7 +92,7 @@ variables:
     license: https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE
 
 resources:
-- comment: "### RESOURCE: INTEGRATION ACCOUNT ###"
+- comments: "### RESOURCE: INTEGRATION ACCOUNT ###"
   apiVersion: "[variables('integrationAccount').apiVersion]"
   type: Microsoft.Logic/integrationAccounts
   name: "[variables('integrationAccount').name]"

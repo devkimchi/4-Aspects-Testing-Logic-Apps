@@ -1,0 +1,133 @@
+state: "{{LogicAppState}}"
+
+parameters:
+  $connections:
+    value:
+      servicebus:
+        id: "{{ServiceBusApiConnectorId}}"
+        connectionId: "{{ServiceBusApiConnectionId}}"
+        connectionName: "{{ServiceBusApiConnectionName}}"
+
+  recurrence:
+    value:
+      interval: "{{RecurrenceInterval}}"
+      frequency: "{{RecurrenceFrequency}}"
+      timeZone: "{{RecurrenceTimeZone}}"
+      startTime: "{{RecurrenceStartTime}}"
+
+  serviceBus:
+    value:
+      topic: "{{ServiceBusTopic}}"
+      topicSubscription: "{{ServiceBusTopicSubscription}}"
+
+definition:
+  $schema: "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#"
+  contentVersion: "1.0.0.0"
+
+  parameters:
+    $connections:
+      type: object
+      defaultValue: {}
+    recurrence:
+      type: object
+      defaultValue: {}
+    serviceBus:
+      type: object
+      defaultValue: {}
+
+  triggers:
+    OnScheduled:
+      type: Recurrence
+      recurrence:
+        interval: "@parameters('recurrence').interval"
+        frequency: "@parameters('recurrence').frequency"
+        timeZone: "@parameters('recurrence').timeZone"
+        startTime: "@parameters('recurrence').startTime"
+    manual:
+      type: Request
+      kind: Http
+      inputs:
+        method: GET
+        schema: {}
+
+  actions:
+    GetMessagesFromTopicSubscription:
+      type: ApiConnection
+      runAfter: {}
+      inputs:
+        method: GET
+        host:
+          connection:
+            name: "@parameters('$connections').servicebus.connectionId"
+        path: "/@{encodeURIComponent(encodeURIComponent(parameters('serviceBus').topic))}/subscriptions/@{encodeURIComponent(parameters('serviceBus').topicSubscription)}/messages/batch/peek"
+        queries:
+          sessionId: ""
+          subscriptionType: Main
+          maxMessageCount: 20
+      runtimeConfiguration:
+        staticResult:
+          name: GetMessagesFromTopicSubscription_200
+          staticResultOptions: Disabled
+
+    RunJavaScript:
+      type: JavaScriptCode
+      runAfter:
+        GetMessagesFromTopicSubscription:
+        - Succeeded
+      inputs:
+        explicitDependencies:
+          includeTrigger: true
+          actions:
+          - GetMessagesFromTopicSubscription
+        code: "{{RunJavaScript}}"
+
+    LoopMessages:
+      type: ForEach
+      runAfter:
+        RunJavaScript:
+        - Succeeded
+      foreach: "@body('GetMessagesFromTopicSubscription')"
+      actions:
+        DecodeMessage:
+          type: Compose
+          runAfter: {}
+          inputs: "@base64ToString(items('LoopMessages')?.ContentData)"
+        CompleteMessage:
+          type: ApiConnection
+          runAfter:
+            DecodeMessage:
+            - Succeeded
+          inputs:
+            method: DELETE
+            host:
+              connection:
+                name: "@parameters('$connections').servicebus.connectionId"
+            path: "/@{encodeURIComponent(encodeURIComponent(parameters('serviceBus').topic))}/subscriptions/@{encodeURIComponent(parameters('serviceBus').topicSubscription)}/messages/complete"
+            queries:
+              sessionId: ""
+              subscriptionType: Main
+              lockToken: "@items('LoopMessages')?.LockToken"
+          runtimeConfiguration:
+            staticResult:
+              name: CompleteMessage_200
+              staticResultOptions: Disabled
+
+  staticResults:
+    GetMessagesFromTopicSubscription_200:
+      status: Succeeded
+      outputs:
+        statusCode: OK
+        headers:
+          Content-Type: application/json
+        body:
+        - ContentType: application/json
+          ContentData: eyAibG9yZW0iOiAiaXBzdW0iIH0=
+          LockToken: abc
+    CompleteMessage_200:
+      status: Succeeded
+      outputs:
+        statusCode: OK
+        headers:
+          Content-Length: "0"
+
+  outputs: {}

@@ -71,7 +71,7 @@ variables:
   resourceName: "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]"
   location: "[if(contains(parameters('locationLookup'), parameters('locationCode')), parameters('locationLookup')[parameters('locationCode')], resourceGroup().location)]"
 
-  # LOG ANALYTICS WORKSPACE
+  # RESOURCE SPECIFIC VARIABLES
   logAnalytics:
     name: "[replace(variables('resourceName'), '{0}', 'logan')]"
     apiVersion: "[providers('Microsoft.OperationalInsights', 'workspaces').apiVersions[0]]"
@@ -89,7 +89,7 @@ variables:
     license: https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE
 
 resources:
-- comment: "### RESOURCE: LOG ANALYTICS WORKSPACE ###"
+- comments: "### RESOURCE: LOG ANALYTICS WORKSPACE ###"
   apiVersion: "[variables('logAnalytics').apiVersion]"
   type: Microsoft.OperationalInsights/workspaces
   location: "[variables('logAnalytics').location]"

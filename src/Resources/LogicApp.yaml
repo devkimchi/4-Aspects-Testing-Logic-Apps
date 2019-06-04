@@ -136,7 +136,7 @@ variables:
   resourceName: "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'), '{1}')]"
   location: "[if(contains(parameters('locationLookup'), parameters('locationCode')), parameters('locationLookup')[parameters('locationCode')], resourceGroup().location)]"
 
-  # LOGIC APP
+  # RESOURCE SPECIFIC VARIABLES
   logicApp:
     name: "[replace(replace(variables('resourceName'), '{0}', 'logapp'), '{1}', concat('-', parameters('workflowName')))]"
     apiVersion: "[providers('Microsoft.Logic', 'workflows').apiVersions[0]]"
@@ -179,7 +179,7 @@ variables:
     license: https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE
 
 resources:
-- comment: "### RESOURCE: LOGIC APP ###"
+- comments: "### RESOURCE: LOGIC APP ###"
   apiVersion: "[variables('logicApp').apiVersion]"
   type: Microsoft.Logic/workflows
   name: "[variables('logicApp').name]"
@@ -200,7 +200,7 @@ resources:
       outputs: {}
 
   resources:
-  - comment: "### RESOURCE: DIAGNOSTIC SETTINGS ###"
+  - comments: "### RESOURCE: DIAGNOSTIC SETTINGS ###"
     condition: "[equals(variables('logicApp').useDiagnosticSettings, json('true'))]"
     apiVersion: "[variables('diagnosticSettings').apiVersion]"
     type: "providers/diagnosticSettings"

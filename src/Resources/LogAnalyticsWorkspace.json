@@ -101,7 +101,7 @@
   },
   "resources": [
     {
-      "comment": "### RESOURCE: LOG ANALYTICS WORKSPACE ###",
+      "comments": "### RESOURCE: LOG ANALYTICS WORKSPACE ###",
       "apiVersion": "[variables('logAnalytics').apiVersion]",
       "type": "Microsoft.OperationalInsights/workspaces",
       "location": "[variables('logAnalytics').location]",

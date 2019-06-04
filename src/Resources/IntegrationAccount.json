@@ -105,7 +105,7 @@
   },
   "resources": [
     {
-      "comment": "### RESOURCE: INTEGRATION ACCOUNT ###",
+      "comments": "### RESOURCE: INTEGRATION ACCOUNT ###",
       "apiVersion": "[variables('integrationAccount').apiVersion]",
       "type": "Microsoft.Logic/integrationAccounts",
       "name": "[variables('integrationAccount').name]",

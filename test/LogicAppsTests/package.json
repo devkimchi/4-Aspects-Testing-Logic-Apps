@@ -1,0 +1,11 @@
+{
+  "name": "logicappstests",
+  "version": "1.0.0",
+  "description": "This provides tests against inline script codes used in Logic Apps",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha ./*Tests.js"
+  },
+  "author": "Justin Yoo",
+  "license": "MIT"
+}

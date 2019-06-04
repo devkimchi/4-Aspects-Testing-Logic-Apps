@@ -49,24 +49,33 @@ parameters:
       krs: koreasouth
       sea: southeastasia
 
+  apiConnectionType:
+    type: string
+    metadata:
+      description: The type of the API connection
+    allowedValues:
+    - servicebus
+    defaultValue: servicebus
+
 variables:
   # METADATA
-  resourceName: "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]"
+  resourceName: "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'), '-{1}')]"
   location: "[if(contains(parameters('locationLookup'), parameters('locationCode')), parameters('locationLookup')[parameters('locationCode')], resourceGroup().location)]"
 
   # API CONNECTION
   apiConnection:
-    name: "[replace(variables('resourceName'), '{0}', 'apicon')]"
+    name: "[replace(replace(variables('resourceName'), '{0}', 'apicon'), '{1}', parameters('apiConnectionType'))]"
     apiVersion: "[providers('Microsoft.Web', 'connections').apiVersions[0]]"
     location: "[variables('location')]"
-    resourceId: "[resourceId('Microsoft.Web/connections', replace(variables('resourceName'), '{0}', 'apicon'))]"
+    resourceId: "[resourceId('Microsoft.Web/connections', replace(replace(variables('resourceName'), '{0}', 'apicon'), '{1}', parameters('apiConnectionType')))]"
+    connectionType: "[parameters('apiConnectionType')]"
 
-  # SERVICE BUS
+  # RESOURCE SPECIFIC VARIABLES
   serviceBus:
-    name: "[replace(variables('resourceName'), '{0}', 'svcbus')]"
+    name: "[replace(replace(variables('resourceName'), '{0}', 'svcbus'), '-{1}', '')]"
     rules:
       apiVersion: "[providers('Microsoft.ServiceBus', 'namespaces/authorizationRules').apiVersions[0]]"
-      resourceId: "[resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', replace(variables('resourceName'), '{0}', 'svcbus'), 'RootManageSharedAccessKey')]"
+      resourceId: "[resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', replace(replace(variables('resourceName'), '{0}', 'svcbus'), '-{1}', ''), 'RootManageSharedAccessKey')]"
   
   # TAGS
   tags:
@@ -77,7 +86,7 @@ variables:
     license: https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE
 
 resources:
-- comment: "### RESOURCE: API CONNECTION ###"
+- comments: "### RESOURCE: API CONNECTION - SERVICE BUS ###"
   apiVersion: "[variables('apiConnection').apiVersion]"
   type: Microsoft.Web/connections
   name: "[variables('apiConnection').name]"
@@ -85,7 +94,7 @@ resources:
   tags: "[variables('tags')]"
   properties:
     api:
-      id: "[concat(subscription().id, '/providers/Microsoft.Web/locations/', variables('apiConnection').location, '/managedApis/servicebus')]"
+      id: "[concat(subscription().id, '/providers/Microsoft.Web/locations/', variables('apiConnection').location, '/managedApis/', variables('apiConnection').connectionType)]"
     displayName: "[variables('apiConnection').name]"
     parameterValues:
       connectionString: "[listKeys(variables('serviceBus').rules.resourceId, variables('serviceBus').rules.apiVersion).primaryConnectionString]"

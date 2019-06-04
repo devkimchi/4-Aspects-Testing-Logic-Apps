@@ -62,7 +62,7 @@ variables:
   resourceName: "[concat(parameters('productOwnerCode'), '-{0}-', parameters('locationCode'), '-', parameters('environmentCode'))]"
   location: "[if(contains(parameters('locationLookup'), parameters('locationCode')), parameters('locationLookup')[parameters('locationCode')], resourceGroup().location)]"
 
-  # SERVICE BUS
+  # RESOURCE SPECIFIC VARIABLES
   serviceBus:
     name: "[replace(variables('resourceName'), '{0}', 'svcbus')]"
     location: "[variables('location')]"
@@ -80,7 +80,7 @@ variables:
     license: https://raw.githubusercontent.com/devkimchi/4-Aspects-Testing-Logic-Apps/master/LICENSE
 
 resources:
-- comment: "### RESOURCE: SERVICE BUS TOPIC ###"
+- comments: "### RESOURCE: SERVICE BUS TOPIC ###"
   apiVersion: "[variables('serviceBus').topic.apiVersion]"
   type: Microsoft.ServiceBus/namespaces/topics
   name: "[concat(variables('serviceBus').name, '/', variables('serviceBus').topic.name)]"
